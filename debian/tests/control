@@ -1,0 +1,6 @@
+Test-Command: cmake debian/tests;make;./libgit2_test
+Depends:
+ cmake,
+ g++,
+ gcc,
+ @,
