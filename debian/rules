@@ -48,6 +48,6 @@ override_dh_auto_install:
 	dh_auto_install --builddirectory=build-debian-release
 
 override_dh_auto_test:
-	dh_auto_test --builddirectory=build-debian-devel
+	dh_auto_test --builddirectory=build-debian-devel -- ARGS="-E 'submodule'"
 	dh_auto_test --builddirectory=build-debian-release
 
