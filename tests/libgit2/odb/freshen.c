@@ -125,7 +125,7 @@ void test_odb_freshen__tree_during_commit(void)
 
 	cl_git_pass(git_commit_create(&commit_id, repo, NULL,
 		signature, signature, NULL, "New commit pointing to old tree",
-		tree, 1, &parent));
+		tree, 1, (const git_commit **)&parent));
 
 	/* make sure we freshen the tree the commit points to */
 	cl_must_pass(p_lstat("testrepo.git/objects/" LOOSE_TREE_FN, &after));
@@ -176,8 +176,11 @@ void test_odb_freshen__packed_object(void)
 	cl_must_pass(p_lstat("testrepo.git/objects/pack/" PACKED_FN, &after));
 
 	cl_assert(before.st_atime == after.st_atime);
-	cl_assert(before.st_atime_nsec == after.st_atime_nsec);
 	cl_assert(before.st_mtime == after.st_mtime);
+
+#ifdef GIT_NSEC
+	cl_assert(before.st_atime_nsec == after.st_atime_nsec);
 	cl_assert(before.st_mtime_nsec == after.st_mtime_nsec);
+#endif
 }
 
