@@ -27,7 +27,6 @@ void test_url_parse__hostname_trivial(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_root(void)
@@ -42,7 +41,6 @@ void test_url_parse__hostname_root(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_implied_root(void)
@@ -57,7 +55,6 @@ void test_url_parse__hostname_implied_root(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_numeric(void)
@@ -72,7 +69,6 @@ void test_url_parse__hostname_numeric(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_implied_root_custom_port(void)
@@ -87,22 +83,6 @@ void test_url_parse__hostname_implied_root_custom_port(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
-}
-
-void test_url_parse__specified_default_port(void)
-{
-	cl_git_pass(git_net_url_parse(&conndata, "http://example.com:80/"));
-	cl_assert_equal_s(conndata.scheme, "http");
-	cl_assert_equal_s(conndata.host, "example.com");
-	cl_assert_equal_s(conndata.port, "80");
-	cl_assert_equal_s(conndata.path, "/");
-	cl_assert_equal_p(conndata.username, NULL);
-	cl_assert_equal_p(conndata.password, NULL);
-	cl_assert_equal_p(conndata.query, NULL);
-	cl_assert_equal_p(conndata.fragment, NULL);
-	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__hostname_implied_root_empty_port(void)
@@ -117,7 +97,6 @@ void test_url_parse__hostname_implied_root_empty_port(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_encoded_password(void)
@@ -133,7 +112,6 @@ void test_url_parse__hostname_encoded_password(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__hostname_user(void)
@@ -149,7 +127,6 @@ void test_url_parse__hostname_user(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_user_pass(void)
@@ -166,7 +143,6 @@ void test_url_parse__hostname_user_pass(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_port(void)
@@ -183,7 +159,6 @@ void test_url_parse__hostname_port(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__hostname_empty_port(void)
@@ -198,7 +173,6 @@ void test_url_parse__hostname_empty_port(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__hostname_user_port(void)
@@ -215,7 +189,6 @@ void test_url_parse__hostname_user_port(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__hostname_user_pass_port(void)
@@ -232,7 +205,6 @@ void test_url_parse__hostname_user_pass_port(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__hostname_user_pass_port_query(void)
@@ -249,7 +221,6 @@ void test_url_parse__hostname_user_pass_port_query(void)
 	cl_assert_equal_s(conndata.query, "query=q&foo=bar&z=asdf");
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__hostname_user_pass_port_fragment(void)
@@ -266,7 +237,6 @@ void test_url_parse__hostname_user_pass_port_fragment(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_s(conndata.fragment, "fragment");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__hostname_user_pass_port_query_fragment(void)
@@ -283,7 +253,6 @@ void test_url_parse__hostname_user_pass_port_query_fragment(void)
 	cl_assert_equal_s(conndata.query, "query=q&foo=bar&z=asdf");
 	cl_assert_equal_s(conndata.fragment, "fragment");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__fragment_with_question_mark(void)
@@ -300,7 +269,6 @@ void test_url_parse__fragment_with_question_mark(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_s(conndata.fragment, "fragment_with?question_mark");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 /* IPv4 addresses */
@@ -315,7 +283,6 @@ void test_url_parse__ipv4_trivial(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv4_root(void)
@@ -328,7 +295,6 @@ void test_url_parse__ipv4_root(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv4_implied_root(void)
@@ -341,7 +307,6 @@ void test_url_parse__ipv4_implied_root(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv4_implied_root_custom_port(void)
@@ -354,7 +319,6 @@ void test_url_parse__ipv4_implied_root_custom_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv4_implied_root_empty_port(void)
@@ -367,7 +331,6 @@ void test_url_parse__ipv4_implied_root_empty_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv4_encoded_password(void)
@@ -381,7 +344,6 @@ void test_url_parse__ipv4_encoded_password(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_s(conndata.password, "pass/is@bad");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv4_user(void)
@@ -395,7 +357,6 @@ void test_url_parse__ipv4_user(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv4_user_pass(void)
@@ -409,7 +370,6 @@ void test_url_parse__ipv4_user_pass(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_s(conndata.password, "pass");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv4_port(void)
@@ -423,7 +383,6 @@ void test_url_parse__ipv4_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv4_empty_port(void)
@@ -436,7 +395,6 @@ void test_url_parse__ipv4_empty_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv4_user_port(void)
@@ -450,7 +408,6 @@ void test_url_parse__ipv4_user_port(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv4_user_pass_port(void)
@@ -464,7 +421,6 @@ void test_url_parse__ipv4_user_pass_port(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_s(conndata.password, "pass");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 /* IPv6 addresses */
@@ -479,7 +435,6 @@ void test_url_parse__ipv6_trivial(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv6_root(void)
@@ -492,7 +447,6 @@ void test_url_parse__ipv6_root(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv6_implied_root(void)
@@ -505,7 +459,6 @@ void test_url_parse__ipv6_implied_root(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv6_implied_root_custom_port(void)
@@ -518,7 +471,6 @@ void test_url_parse__ipv6_implied_root_custom_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv6_implied_root_empty_port(void)
@@ -531,7 +483,6 @@ void test_url_parse__ipv6_implied_root_empty_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv6_encoded_password(void)
@@ -545,7 +496,6 @@ void test_url_parse__ipv6_encoded_password(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_s(conndata.password, "pass/is@bad");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv6_user(void)
@@ -559,7 +509,6 @@ void test_url_parse__ipv6_user(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv6_user_pass(void)
@@ -573,7 +522,6 @@ void test_url_parse__ipv6_user_pass(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_s(conndata.password, "pass");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv6_port(void)
@@ -587,7 +535,6 @@ void test_url_parse__ipv6_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv6_empty_port(void)
@@ -600,7 +547,6 @@ void test_url_parse__ipv6_empty_port(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__ipv6_user_port(void)
@@ -614,7 +560,6 @@ void test_url_parse__ipv6_user_port(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv6_user_pass_port(void)
@@ -628,7 +573,6 @@ void test_url_parse__ipv6_user_pass_port(void)
 	cl_assert_equal_s(conndata.username, "user");
 	cl_assert_equal_s(conndata.password, "pass");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ipv6_invalid_addresses(void)
@@ -737,7 +681,6 @@ void test_url_parse__empty_scheme(void)
 	cl_assert_equal_p(conndata.query, NULL);
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__invalid_scheme_is_relative(void)
@@ -752,14 +695,12 @@ void test_url_parse__invalid_scheme_is_relative(void)
 	cl_assert_equal_s(conndata.query, "query_string=yes");
 	cl_assert_equal_p(conndata.fragment, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__scheme_case_is_normalized(void)
 {
 	cl_git_pass(git_net_url_parse(&conndata, "GIT+SSH://host:42/path/to/project"));
 	cl_assert_equal_s(conndata.scheme, "git+ssh");
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__nonhierarchical_scheme(void)
@@ -772,7 +713,6 @@ void test_url_parse__nonhierarchical_scheme(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__no_scheme_relative_path(void)
@@ -785,7 +725,6 @@ void test_url_parse__no_scheme_relative_path(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__no_scheme_absolute_path(void)
@@ -798,7 +737,6 @@ void test_url_parse__no_scheme_absolute_path(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__empty_path(void)
@@ -811,7 +749,6 @@ void test_url_parse__empty_path(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__empty_path_with_empty_authority(void)
@@ -824,7 +761,6 @@ void test_url_parse__empty_path_with_empty_authority(void)
 	cl_assert_equal_p(conndata.username, NULL);
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }
 
 void test_url_parse__http_follows_the_rfc(void)
@@ -842,7 +778,6 @@ void test_url_parse__ssh_from_terrible_google_rfc_violating_products(void)
 	cl_assert_equal_s(conndata.username, "my.email.address@gmail.com");
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__ssh_with_password_from_terrible_google_rfc_violating_products(void)
@@ -855,7 +790,6 @@ void test_url_parse__ssh_with_password_from_terrible_google_rfc_violating_produc
 	cl_assert_equal_s(conndata.username, "my.email.address@gmail.com");
 	cl_assert_equal_s(conndata.password, "seekret");
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 0);
-	cl_assert_equal_i(conndata.port_specified, 1);
 }
 
 void test_url_parse__spaces_in_the_name(void)
@@ -868,5 +802,4 @@ void test_url_parse__spaces_in_the_name(void)
 	cl_assert_equal_s(conndata.username, "libgit2");
 	cl_assert_equal_p(conndata.password, NULL);
 	cl_assert_equal_i(git_net_url_is_default_port(&conndata), 1);
-	cl_assert_equal_i(conndata.port_specified, 0);
 }

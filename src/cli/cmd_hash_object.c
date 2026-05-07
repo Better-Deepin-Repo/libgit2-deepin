@@ -13,6 +13,7 @@
 
 #define COMMAND_NAME "hash-object"
 
+static int show_help;
 static char *type_name;
 static int write_object, read_stdin, literally;
 static char **filenames;
@@ -35,7 +36,7 @@ static const cli_opt_spec opts[] = {
 
 static void print_help(void)
 {
-	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts, 0);
+	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts);
 	printf("\n");
 
 	printf("Compute the object ID for a given file and optionally write that file\nto the object database.\n");
@@ -102,7 +103,7 @@ int cmd_hash_object(int argc, char **argv)
 	if (cli_opt_parse(&invalid_opt, opts, argv + 1, argc - 1, CLI_OPT_PARSE_GNU))
 		return cli_opt_usage_error(COMMAND_NAME, opts, &invalid_opt);
 
-	if (cli_opt__show_help) {
+	if (show_help) {
 		print_help();
 		return 0;
 	}

@@ -14,12 +14,14 @@
 
 #define BUFFER_SIZE (1024 * 1024)
 
-static int verbose, read_stdin;
+static int show_help, verbose, read_stdin;
 static char *filename;
 static cli_progress progress = CLI_PROGRESS_INIT;
 
 static const cli_opt_spec opts[] = {
-	CLI_COMMON_OPT,
+	{ CLI_OPT_TYPE_SWITCH,    "help",     0, &show_help,   1,
+	  CLI_OPT_USAGE_HIDDEN | CLI_OPT_USAGE_STOP_PARSING, NULL,
+	  "display help about the " COMMAND_NAME " command" },
 
 	{ CLI_OPT_TYPE_SWITCH,    "verbose", 'v', &verbose,    1,
 	  CLI_OPT_USAGE_DEFAULT,   NULL,    "display progress output" },
@@ -36,7 +38,7 @@ static const cli_opt_spec opts[] = {
 
 static void print_help(void)
 {
-	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts, 0);
+	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts);
 	printf("\n");
 
 	printf("Indexes a packfile and writes the index to disk.\n");
@@ -60,7 +62,7 @@ int cmd_index_pack(int argc, char **argv)
 	if (cli_opt_parse(&invalid_opt, opts, argv + 1, argc - 1, CLI_OPT_PARSE_GNU))
 		return cli_opt_usage_error(COMMAND_NAME, opts, &invalid_opt);
 
-	if (cli_opt__show_help) {
+	if (show_help) {
 		print_help();
 		return 0;
 	}
@@ -78,9 +80,7 @@ int cmd_index_pack(int argc, char **argv)
 	}
 
 #ifdef GIT_EXPERIMENTAL_SHA256
-	idx_opts.oid_type = GIT_OID_SHA1;
-
-	ret = git_indexer_new(&idx, ".", &idx_opts);
+	ret = git_indexer_new(&idx, ".", GIT_OID_SHA1, &idx_opts);
 #else
 	ret = git_indexer_new(&idx, ".", 0, NULL, &idx_opts);
 #endif

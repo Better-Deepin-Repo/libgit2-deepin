@@ -14,8 +14,8 @@
 
 /**
  * @file git2/refdb.h
- * @brief A database for references (branches and tags)
- * @defgroup git_refdb A database for references (branches and tags)
+ * @brief Git custom refs backend functions
+ * @defgroup git_refdb Git custom refs backend API
  * @ingroup Git
  * @{
  */

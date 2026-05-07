@@ -32,6 +32,7 @@
 #include "commit.h"
 #include "oidarray.h"
 #include "merge_driver.h"
+#include "oidmap.h"
 #include "array.h"
 
 #include "git2/types.h"
@@ -123,11 +124,11 @@ static int merge_bases_many(git_commit_list **out, git_revwalk **walk_out, git_r
 	*out = result;
 	*walk_out = walk;
 
-	git_vector_dispose(&list);
+	git_vector_free(&list);
 	return 0;
 
 on_error:
-	git_vector_dispose(&list);
+	git_vector_free(&list);
 	git_revwalk_free(walk);
 	return error;
 }
@@ -510,7 +511,7 @@ static int remove_redundant(git_revwalk *walk, git_vector *commits, uint32_t min
 done:
 	git__free(redundant);
 	git__free(filled_index);
-	git_vector_dispose(&work);
+	git_vector_free(&work);
 	return error;
 }
 
@@ -569,7 +570,7 @@ int git_merge__bases_many(
 		if ((error = clear_commit_marks(one, ALL_FLAGS)) < 0 ||
 		    (error = clear_commit_marks_many(twos, ALL_FLAGS)) < 0 ||
 		    (error = remove_redundant(walk, &redundant, minimum_generation)) < 0) {
-			git_vector_dispose(&redundant);
+			git_vector_free(&redundant);
 			return error;
 		}
 
@@ -578,7 +579,7 @@ int git_merge__bases_many(
 				git_commit_list_insert_by_date(two, &result);
 		}
 
-		git_vector_dispose(&redundant);
+		git_vector_free(&redundant);
 	}
 
 	*out = result;
@@ -936,7 +937,7 @@ static int merge_conflict_resolve_contents(
 	git_merge_file_result result = {0};
 	git_merge_driver *driver;
 	git_merge_driver__builtin builtin = {{0}};
-	git_index_entry *merge_result = NULL;
+	git_index_entry *merge_result;
 	git_odb *odb = NULL;
 	const char *name;
 	bool fallback = false;
@@ -1143,28 +1144,24 @@ typedef struct {
 	size_t first_entry;
 } deletes_by_oid_queue;
 
-GIT_HASHMAP_OID_SETUP(git_merge_deletes_oidmap, deletes_by_oid_queue *);
-
-static void deletes_by_oid_dispose(git_merge_deletes_oidmap *map)
-{
-	git_hashmap_iter_t iter = GIT_HASHMAP_ITER_INIT;
+static void deletes_by_oid_free(git_oidmap *map) {
 	deletes_by_oid_queue *queue;
 
 	if (!map)
 		return;
 
-	while (git_merge_deletes_oidmap_iterate(&iter, NULL, &queue, map) == 0)
+	git_oidmap_foreach_value(map, queue, {
 		git_array_clear(queue->arr);
-
-	git_merge_deletes_oidmap_dispose(map);
+	});
+	git_oidmap_free(map);
 }
 
-static int deletes_by_oid_enqueue(git_merge_deletes_oidmap *map, git_pool *pool, const git_oid *id, size_t idx)
+static int deletes_by_oid_enqueue(git_oidmap *map, git_pool *pool, const git_oid *id, size_t idx)
 {
 	deletes_by_oid_queue *queue;
 	size_t *array_entry;
 
-	if (git_merge_deletes_oidmap_get(&queue, map, id) != 0) {
+	if ((queue = git_oidmap_get(map, id)) == NULL) {
 		queue = git_pool_malloc(pool, sizeof(deletes_by_oid_queue));
 		GIT_ERROR_CHECK_ALLOC(queue);
 
@@ -1172,7 +1169,7 @@ static int deletes_by_oid_enqueue(git_merge_deletes_oidmap *map, git_pool *pool,
 		queue->next_pos = 0;
 		queue->first_entry = idx;
 
-		if (git_merge_deletes_oidmap_put(map, id, queue) < 0)
+		if (git_oidmap_set(map, id, queue) < 0)
 			return -1;
 	} else {
 		array_entry = git_array_alloc(queue->arr);
@@ -1183,14 +1180,13 @@ static int deletes_by_oid_enqueue(git_merge_deletes_oidmap *map, git_pool *pool,
 	return 0;
 }
 
-static int deletes_by_oid_dequeue(size_t *idx, git_merge_deletes_oidmap *map, const git_oid *id)
+static int deletes_by_oid_dequeue(size_t *idx, git_oidmap *map, const git_oid *id)
 {
 	deletes_by_oid_queue *queue;
 	size_t *array_entry;
-	int error;
 
-	if ((error = git_merge_deletes_oidmap_get(&queue, map, id)) != 0)
-		return error;
+	if ((queue = git_oidmap_get(map, id)) == NULL)
+		return GIT_ENOTFOUND;
 
 	if (queue->next_pos == 0) {
 		*idx = queue->first_entry;
@@ -1213,9 +1209,14 @@ static int merge_diff_mark_similarity_exact(
 {
 	size_t i, j;
 	git_merge_diff *conflict_src, *conflict_tgt;
-	git_merge_deletes_oidmap ours_deletes_by_oid = GIT_HASHMAP_INIT,
-	                         theirs_deletes_by_oid = GIT_HASHMAP_INIT;
+	git_oidmap *ours_deletes_by_oid = NULL, *theirs_deletes_by_oid = NULL;
 	int error = 0;
+
+	if (git_oidmap_new(&ours_deletes_by_oid) < 0 ||
+	    git_oidmap_new(&theirs_deletes_by_oid) < 0) {
+		error = -1;
+		goto done;
+	}
 
 	/* Build a map of object ids to conflicts */
 	git_vector_foreach(&diff_list->conflicts, i, conflict_src) {
@@ -1232,13 +1233,13 @@ static int merge_diff_mark_similarity_exact(
 			continue;
 
 		if (!GIT_MERGE_INDEX_ENTRY_EXISTS(conflict_src->our_entry)) {
-			error = deletes_by_oid_enqueue(&ours_deletes_by_oid, &diff_list->pool, &conflict_src->ancestor_entry.id, i);
+			error = deletes_by_oid_enqueue(ours_deletes_by_oid, &diff_list->pool, &conflict_src->ancestor_entry.id, i);
 			if (error < 0)
 				goto done;
 		}
 
 		if (!GIT_MERGE_INDEX_ENTRY_EXISTS(conflict_src->their_entry)) {
-			error = deletes_by_oid_enqueue(&theirs_deletes_by_oid, &diff_list->pool, &conflict_src->ancestor_entry.id, i);
+			error = deletes_by_oid_enqueue(theirs_deletes_by_oid, &diff_list->pool, &conflict_src->ancestor_entry.id, i);
 			if (error < 0)
 				goto done;
 		}
@@ -1249,7 +1250,7 @@ static int merge_diff_mark_similarity_exact(
 			continue;
 
 		if (GIT_MERGE_INDEX_ENTRY_EXISTS(conflict_tgt->our_entry)) {
-			if (deletes_by_oid_dequeue(&i, &ours_deletes_by_oid, &conflict_tgt->our_entry.id) == 0) {
+			if (deletes_by_oid_dequeue(&i, ours_deletes_by_oid, &conflict_tgt->our_entry.id) == 0) {
 				similarity_ours[i].similarity = 100;
 				similarity_ours[i].other_idx = j;
 
@@ -1259,7 +1260,7 @@ static int merge_diff_mark_similarity_exact(
 		}
 
 		if (GIT_MERGE_INDEX_ENTRY_EXISTS(conflict_tgt->their_entry)) {
-			if (deletes_by_oid_dequeue(&i, &theirs_deletes_by_oid, &conflict_tgt->their_entry.id) == 0) {
+			if (deletes_by_oid_dequeue(&i, theirs_deletes_by_oid, &conflict_tgt->their_entry.id) == 0) {
 				similarity_theirs[i].similarity = 100;
 				similarity_theirs[i].other_idx = j;
 
@@ -1270,8 +1271,8 @@ static int merge_diff_mark_similarity_exact(
 	}
 
 done:
-	deletes_by_oid_dispose(&ours_deletes_by_oid);
-	deletes_by_oid_dispose(&theirs_deletes_by_oid);
+	deletes_by_oid_free(ours_deletes_by_oid);
+	deletes_by_oid_free(theirs_deletes_by_oid);
 
 	return error;
 }
@@ -1865,9 +1866,9 @@ void git_merge_diff_list__free(git_merge_diff_list *diff_list)
 	if (!diff_list)
 		return;
 
-	git_vector_dispose(&diff_list->staged);
-	git_vector_dispose(&diff_list->conflicts);
-	git_vector_dispose(&diff_list->resolved);
+	git_vector_free(&diff_list->staged);
+	git_vector_free(&diff_list->conflicts);
+	git_vector_free(&diff_list->resolved);
 	git_pool_clear(&diff_list->pool);
 	git__free(diff_list);
 }
@@ -2835,7 +2836,7 @@ cleanup:
 
 	git_str_dispose(&file_path);
 
-	git_vector_dispose(&matching);
+	git_vector_free(&matching);
 	git__free(entries);
 
 	return error;
@@ -3014,7 +3015,7 @@ done:
 	git_iterator_free(iter_new);
 	git_diff_free(staged_diff_list);
 	git_diff_free(index_diff_list);
-	git_vector_dispose(&staged_paths);
+	git_vector_free(&staged_paths);
 
 	return error;
 }
@@ -3111,7 +3112,7 @@ int git_merge__check_result(git_repository *repo, git_index *index_new)
 	}
 
 done:
-	git_vector_dispose(&paths);
+	git_vector_free(&paths);
 	git_tree_free(head_tree);
 	git_iterator_free(iter_head);
 	git_iterator_free(iter_new);
@@ -3352,7 +3353,8 @@ int git_merge(
 		goto done;
 
 	checkout_strategy = given_checkout_opts ?
-		given_checkout_opts->checkout_strategy : 0;
+		given_checkout_opts->checkout_strategy :
+		GIT_CHECKOUT_SAFE;
 
 	if ((error = git_indexwriter_init_for_operation(&indexwriter, repo,
 		&checkout_strategy)) < 0)

@@ -19,6 +19,7 @@ typedef enum {
 	DISPLAY_TYPE
 } display_t;
 
+static int show_help;
 static int display = DISPLAY_CONTENT;
 static char *type_name, *object_spec;
 
@@ -42,7 +43,7 @@ static const cli_opt_spec opts[] = {
 
 static void print_help(void)
 {
-	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts, 0);
+	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts);
 	printf("\n");
 
 	printf("Display the content for the given object in the repository.\n");
@@ -146,7 +147,7 @@ int cmd_cat_file(int argc, char **argv)
 	if (cli_opt_parse(&invalid_opt, opts, argv + 1, argc - 1, CLI_OPT_PARSE_GNU))
 		return cli_opt_usage_error(COMMAND_NAME, opts, &invalid_opt);
 
-	if (cli_opt__show_help) {
+	if (show_help) {
 		print_help();
 		return 0;
 	}

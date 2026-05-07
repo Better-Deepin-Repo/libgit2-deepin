@@ -13,6 +13,7 @@
 #include "refdb.h"
 
 #include "git2/sys/refdb_backend.h"
+#include "git2/sys/reflog.h"
 
 void git_reflog_entry__free(git_reflog_entry *entry)
 {
@@ -39,7 +40,7 @@ void git_reflog_free(git_reflog *reflog)
 		git_reflog_entry__free(entry);
 	}
 
-	git_vector_dispose(&reflog->entries);
+	git_vector_free(&reflog->entries);
 	git__free(reflog->ref_name);
 	git__free(reflog);
 }

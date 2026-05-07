@@ -14,9 +14,9 @@
 #include "checkout.h"
 
 /**
- * @file git2/worktree.h
- * @brief Additional working directories for a repository
- * @defgroup git_commit Additional working directories for a repository
+ * @file git2/worktrees.h
+ * @brief Git worktree related functions
+ * @defgroup git_commit Git worktree related functions
  * @ingroup Git
  * @{
  */
@@ -96,10 +96,7 @@ typedef struct git_worktree_add_options {
 	git_checkout_options checkout_options;
 } git_worktree_add_options;
 
-/** Current version for the `git_worktree_add_options` structure */
 #define GIT_WORKTREE_ADD_OPTIONS_VERSION 1
-
-/** Static constructor for `git_worktree_add_options` */
 #define GIT_WORKTREE_ADD_OPTIONS_INIT { GIT_WORKTREE_ADD_OPTIONS_VERSION, \
 	0, 0, NULL, GIT_CHECKOUT_OPTIONS_INIT }
 
@@ -214,10 +211,7 @@ typedef struct git_worktree_prune_options {
 	uint32_t flags;
 } git_worktree_prune_options;
 
-/** Current version for the `git_worktree_prune_options` structure */
 #define GIT_WORKTREE_PRUNE_OPTIONS_VERSION 1
-
-/** Static constructor for `git_worktree_prune_options` */
 #define GIT_WORKTREE_PRUNE_OPTIONS_INIT {GIT_WORKTREE_PRUNE_OPTIONS_VERSION,0}
 
 /**
@@ -274,5 +268,4 @@ GIT_EXTERN(int) git_worktree_prune(git_worktree *wt,
 
 /** @} */
 GIT_END_DECL
-
 #endif

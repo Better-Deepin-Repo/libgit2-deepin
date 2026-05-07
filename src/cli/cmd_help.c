@@ -13,6 +13,7 @@
 #define COMMAND_NAME "help"
 
 static char *command;
+static int show_help;
 
 static const cli_opt_spec opts[] = {
 	CLI_COMMON_OPT,
@@ -24,7 +25,7 @@ static const cli_opt_spec opts[] = {
 
 static int print_help(void)
 {
-	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts, CLI_OPT_USAGE_SHOW_HIDDEN);
+	cli_opt_usage_fprint(stdout, PROGRAM_NAME, COMMAND_NAME, opts);
 	printf("\n");
 
 	printf("Display help information about %s.  If a command is specified, help\n", PROGRAM_NAME);
@@ -38,7 +39,7 @@ static int print_commands(void)
 {
 	const cli_cmd_spec *cmd;
 
-	cli_opt_usage_fprint(stdout, PROGRAM_NAME, NULL, cli_common_opts, CLI_OPT_USAGE_SHOW_HIDDEN);
+	cli_opt_usage_fprint(stdout, PROGRAM_NAME, NULL, cli_common_opts);
 	printf("\n");
 
 	printf("These are the %s commands available:\n\n", PROGRAM_NAME);
@@ -61,7 +62,7 @@ int cmd_help(int argc, char **argv)
 		return cli_opt_usage_error(COMMAND_NAME, opts, &invalid_opt);
 
 	/* Show the meta-help */
-	if (cli_opt__show_help)
+	if (show_help)
 		return print_help();
 
 	/* We were not asked to show help for a specific command. */

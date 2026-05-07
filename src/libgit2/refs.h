@@ -12,6 +12,7 @@
 #include "git2/oid.h"
 #include "git2/refs.h"
 #include "git2/refdb.h"
+#include "strmap.h"
 #include "str.h"
 #include "oid.h"
 

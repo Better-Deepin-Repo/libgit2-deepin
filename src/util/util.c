@@ -269,26 +269,13 @@ int git__prefixncmp_icase(const char *str, size_t str_n, const char *prefix)
 	return prefixcmp(str, str_n, prefix, true);
 }
 
-static int suffixcmp(const char *str, const char *suffix, bool icase)
+int git__suffixcmp(const char *str, const char *suffix)
 {
 	size_t a = strlen(str);
 	size_t b = strlen(suffix);
-
 	if (a < b)
 		return -1;
-
-	return icase ? strcasecmp(str + (a - b), suffix) :
-	               strcmp(str + (a - b), suffix);
-}
-
-int git__suffixcmp(const char *str, const char *suffix)
-{
-	return suffixcmp(str, suffix, false);
-}
-
-int git__suffixcmp_icase(const char *str, const char *suffix)
-{
-	return suffixcmp(str, suffix, true);
+	return strcmp(str + (a - b), suffix);
 }
 
 char *git__strtok(char **end, const char *sep)
@@ -336,7 +323,7 @@ char *git__strsep(char **end, const char *sep)
 
 size_t git__linenlen(const char *buffer, size_t buffer_len)
 {
-	const char *nl = memchr(buffer, '\n', buffer_len);
+	char *nl = memchr(buffer, '\n', buffer_len);
 	return nl ? (size_t)(nl - buffer) + 1 : buffer_len;
 }
 

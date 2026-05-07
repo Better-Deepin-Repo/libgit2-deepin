@@ -186,6 +186,8 @@ void test_checkout_tree__can_switch_branches(void)
 	git_object_free(obj);
 
 	/* do second checkout safe because we should be clean after first */
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE;
+
 	cl_git_pass(git_reference_name_to_id(&oid, g_repo, "refs/heads/subtrees"));
 	cl_git_pass(git_object_lookup(&obj, g_repo, &oid, GIT_OBJECT_ANY));
 
@@ -211,7 +213,7 @@ void test_checkout_tree__can_remove_untracked(void)
 {
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 
-	opts.checkout_strategy = GIT_CHECKOUT_REMOVE_UNTRACKED;
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_REMOVE_UNTRACKED;
 
 	cl_git_mkfile("testrepo/untracked_file", "as you wish");
 	cl_assert(git_fs_path_isfile("testrepo/untracked_file"));
@@ -226,7 +228,7 @@ void test_checkout_tree__can_remove_ignored(void)
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 	int ignored = 0;
 
-	opts.checkout_strategy = GIT_CHECKOUT_REMOVE_IGNORED;
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_REMOVE_IGNORED;
 
 	cl_git_mkfile("testrepo/ignored_file", "as you wish");
 
@@ -311,7 +313,7 @@ void test_checkout_tree__conflict_on_ignored_when_not_overwriting(void)
 	int error;
 
 	cl_git_fail(error = checkout_tree_with_blob_ignored_in_workdir(
-		GIT_CHECKOUT_DONT_OVERWRITE_IGNORED, false));
+		GIT_CHECKOUT_SAFE | GIT_CHECKOUT_DONT_OVERWRITE_IGNORED, false));
 
 	cl_assert_equal_i(GIT_ECONFLICT, error);
 }
@@ -332,7 +334,7 @@ void test_checkout_tree__conflict_on_ignored_folder_when_not_overwriting(void)
 	int error;
 
 	cl_git_fail(error = checkout_tree_with_blob_ignored_in_workdir(
-		GIT_CHECKOUT_DONT_OVERWRITE_IGNORED, true));
+		GIT_CHECKOUT_SAFE | GIT_CHECKOUT_DONT_OVERWRITE_IGNORED, true));
 
 	cl_assert_equal_i(GIT_ECONFLICT, error);
 }
@@ -368,7 +370,7 @@ void test_checkout_tree__can_update_only(void)
 
 	/* now checkout branch but with update only */
 
-	opts.checkout_strategy = GIT_CHECKOUT_UPDATE_ONLY;
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_UPDATE_ONLY;
 
 	cl_git_pass(git_reference_name_to_id(&oid, g_repo, "refs/heads/dir"));
 	cl_git_pass(git_object_lookup(&obj, g_repo, &oid, GIT_OBJECT_ANY));
@@ -415,6 +417,7 @@ void test_checkout_tree__can_checkout_with_pattern(void)
 
 	/* now to a narrow patterned checkout */
 
+	g_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
 	g_opts.paths.strings = entries;
 	g_opts.paths.count = 1;
 
@@ -486,6 +489,7 @@ void test_checkout_tree__can_disable_pattern_match(void)
 	/* now to a narrow patterned checkout, but disable pattern */
 
 	g_opts.checkout_strategy =
+		GIT_CHECKOUT_SAFE |
 		GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
 	g_opts.paths.strings = entries;
 	g_opts.paths.count = 1;
@@ -601,6 +605,8 @@ void test_checkout_tree__donot_update_deleted_file_by_default(void)
 	git_commit *old_commit = NULL, *new_commit = NULL;
 	git_index *index = NULL;
 	checkout_counts ct;
+
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE;
 
 	memset(&ct, 0, sizeof(ct));
 	opts.notify_flags = GIT_CHECKOUT_NOTIFY_ALL;
@@ -877,7 +883,8 @@ void test_checkout_tree__target_directory_from_bare(void)
 	g_repo = cl_git_sandbox_init("testrepo.git");
 	cl_assert(git_repository_is_bare(g_repo));
 
-	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE |
+		GIT_CHECKOUT_RECREATE_MISSING;
 
 	opts.notify_flags = GIT_CHECKOUT_NOTIFY_ALL;
 	opts.notify_cb = checkout_count_callback;
@@ -955,6 +962,8 @@ void test_checkout_tree__fails_when_conflicts_exist_in_index(void)
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 	git_oid oid;
 	git_object *obj = NULL;
+
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE;
 
 	cl_git_pass(git_reference_name_to_id(&oid, g_repo, "HEAD"));
 	cl_git_pass(git_object_lookup(&obj, g_repo, &oid, GIT_OBJECT_ANY));
@@ -1613,6 +1622,8 @@ void test_checkout_tree__retains_external_index_changes(void)
 {
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE;
+
 	modify_index_and_checkout_tree(&opts);
 	assert_status_entrycount(g_repo, 1);
 }
@@ -1621,7 +1632,7 @@ void test_checkout_tree__no_index_refresh(void)
 {
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 
-	opts.checkout_strategy = GIT_CHECKOUT_NO_REFRESH;
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_NO_REFRESH;
 
 	modify_index_and_checkout_tree(&opts);
 	assert_status_entrycount(g_repo, 0);
@@ -1648,7 +1659,7 @@ void test_checkout_tree__dry_run(void)
 	/* now checkout branch but with dry run enabled */
 
 	memset(&ct, 0, sizeof(ct));
-	opts.checkout_strategy = GIT_CHECKOUT_DRY_RUN;
+	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_DRY_RUN;
 	opts.notify_flags = GIT_CHECKOUT_NOTIFY_ALL;
 	opts.notify_cb = checkout_count_callback;
 	opts.notify_payload = &ct;

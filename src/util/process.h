@@ -11,8 +11,7 @@
 typedef struct git_process git_process;
 
 typedef struct {
-	unsigned int use_shell   : 1,
-	             capture_in  : 1,
+	unsigned int capture_in  : 1,
 	             capture_out : 1,
 	             capture_err : 1,
 	             exclude_env : 1;

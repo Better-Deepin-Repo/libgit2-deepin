@@ -14,7 +14,7 @@
 
 /**
  * @file git2/patch.h
- * @brief Patches store the textual diffs in a delta
+ * @brief Patch handling routines.
  * @ingroup Git
  * @{
  */
@@ -283,7 +283,8 @@ GIT_EXTERN(int) git_patch_to_buf(
 	git_buf *out,
 	git_patch *patch);
 
-/**@}*/
 GIT_END_DECL
+
+/**@}*/
 
 #endif

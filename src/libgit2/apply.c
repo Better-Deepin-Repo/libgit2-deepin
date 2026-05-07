@@ -20,7 +20,6 @@
 #include "reader.h"
 #include "index.h"
 #include "repository.h"
-#include "hashmap_str.h"
 #include "apply.h"
 
 typedef struct {
@@ -97,7 +96,7 @@ static void patch_image_free(patch_image *image)
 		return;
 
 	git_pool_clear(&image->pool);
-	git_vector_dispose(&image->lines);
+	git_vector_free(&image->lines);
 }
 
 static bool match_hunk(
@@ -453,7 +452,7 @@ static int apply_one(
 	git_reader *postimage_reader,
 	git_index *postimage,
 	git_diff *diff,
-	git_hashset_str *removed_paths,
+	git_strmap *removed_paths,
 	size_t i,
 	const git_apply_options *opts)
 {
@@ -490,7 +489,7 @@ static int apply_one(
 	 */
 	if (delta->status != GIT_DELTA_RENAMED &&
 	    delta->status != GIT_DELTA_ADDED) {
-		if (git_hashset_str_contains(removed_paths, delta->old_file.path)) {
+		if (git_strmap_exists(removed_paths, delta->old_file.path)) {
 			error = apply_err("path '%s' has been renamed or deleted", delta->old_file.path);
 			goto done;
 		}
@@ -574,11 +573,11 @@ static int apply_one(
 
 	if (delta->status == GIT_DELTA_RENAMED ||
 	    delta->status == GIT_DELTA_DELETED)
-		error = git_hashset_str_add(removed_paths, delta->old_file.path);
+		error = git_strmap_set(removed_paths, delta->old_file.path, (char *) delta->old_file.path);
 
 	if (delta->status == GIT_DELTA_RENAMED ||
 	    delta->status == GIT_DELTA_ADDED)
-		git_hashset_str_remove(removed_paths, delta->new_file.path);
+		git_strmap_delete(removed_paths, delta->new_file.path);
 
 done:
 	git_str_dispose(&pre_contents);
@@ -598,17 +597,20 @@ static int apply_deltas(
 	git_diff *diff,
 	const git_apply_options *opts)
 {
-	git_hashset_str removed_paths = GIT_HASHSET_INIT;
+	git_strmap *removed_paths;
 	size_t i;
 	int error = 0;
 
+	if (git_strmap_new(&removed_paths) < 0)
+		return -1;
+
 	for (i = 0; i < git_diff_num_deltas(diff); i++) {
-		if ((error = apply_one(repo, pre_reader, preimage, post_reader, postimage, diff, &removed_paths, i, opts)) < 0)
+		if ((error = apply_one(repo, pre_reader, preimage, post_reader, postimage, diff, removed_paths, i, opts)) < 0)
 			goto done;
 	}
 
 done:
-	git_hashset_str_dispose(&removed_paths);
+	git_strmap_free(removed_paths);
 	return error;
 }
 
@@ -713,6 +715,7 @@ static int git_apply__to_workdir(
 			goto done;
 	}
 
+	checkout_opts.checkout_strategy |= GIT_CHECKOUT_SAFE;
 	checkout_opts.checkout_strategy |= GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
 	checkout_opts.checkout_strategy |= GIT_CHECKOUT_DONT_WRITE_INDEX;
 
@@ -727,7 +730,7 @@ static int git_apply__to_workdir(
 	error = git_checkout_index(repo, postimage, &checkout_opts);
 
 done:
-	git_vector_dispose(&paths);
+	git_vector_free(&paths);
 	return error;
 }
 

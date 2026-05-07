@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include "oidarray.h"
+#include "oidmap.h"
 
 /** graft commit */
 typedef struct {

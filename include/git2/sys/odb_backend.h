@@ -13,9 +13,9 @@
 #include "git2/odb.h"
 
 /**
- * @file git2/sys/odb_backend.h
- * @brief Object database backends for custom object storage
- * @defgroup git_backend Object database backends for custom object storage
+ * @file git2/sys/backend.h
+ * @brief Git custom backend implementors functions
+ * @defgroup git_backend Git custom backend APIs
  * @ingroup Git
  * @{
  */
@@ -106,10 +106,7 @@ struct git_odb_backend {
 	void GIT_CALLBACK(free)(git_odb_backend *);
 };
 
-/** Current version for the `git_odb_backend_options` structure */
 #define GIT_ODB_BACKEND_VERSION 1
-
-/** Static constructor for `git_odb_backend_options` */
 #define GIT_ODB_BACKEND_INIT {GIT_ODB_BACKEND_VERSION}
 
 /**
@@ -170,7 +167,6 @@ GIT_EXTERN(void *) git_odb_backend_malloc(git_odb_backend *backend, size_t len);
 
 #endif
 
-/** @} */
 GIT_END_DECL
 
 #endif

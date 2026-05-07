@@ -282,8 +282,7 @@ static int skip_bom(git_parse_ctx *parser)
 /* '\"' -> '"' etc */
 static int unescape_line(char **out, bool *is_multi, const char *ptr, int *quote_count)
 {
-	char *str, *fixed;
-	const char *esc;
+	char *str, *fixed, *esc;
 	size_t ptr_len = strlen(ptr), alloc_len;
 
 	*is_multi = false;

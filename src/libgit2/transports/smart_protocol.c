@@ -317,13 +317,6 @@ static int store_common(transport_smart *t)
 		if ((error = recv_pkt(&pkt, NULL, t)) < 0)
 			return error;
 
-		if (t->rpc && (pkt->type == GIT_PKT_SHALLOW ||
-		               pkt->type == GIT_PKT_UNSHALLOW ||
-		               pkt->type == GIT_PKT_FLUSH)) {
-			git__free(pkt);
-			continue;
-		}
-
 		if (pkt->type != GIT_PKT_ACK) {
 			git__free(pkt);
 			return 0;
@@ -401,7 +394,6 @@ static int setup_shallow_roots(
 
 		memcpy(out->ptr, wants->shallow_roots,
 		       sizeof(git_oid) * wants->shallow_roots_len);
-		out->size = wants->shallow_roots_len;
 	}
 
 	return 0;
@@ -440,9 +432,6 @@ int git_smart__negotiate_fetch(
 
 		if ((error = git_smart__negotiation_step(&t->parent, data.ptr, data.size)) < 0)
 			goto on_error;
-
-		if (!t->rpc)
-			git_str_clear(&data);
 
 		while ((error = recv_pkt((git_pkt **)&pkt, NULL, t)) == 0) {
 			bool complete = false;

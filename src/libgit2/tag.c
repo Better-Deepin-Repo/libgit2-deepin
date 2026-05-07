@@ -263,10 +263,8 @@ static bool tag_name_is_valid(const char *tag_name)
 	/*
 	 * Discourage tag name starting with dash,
 	 * https://github.com/git/git/commit/4f0accd638b8d2
-	 * and refuse to use HEAD as a tagname,
-	 * https://github.com/git/git/commit/bbd445d5efd415
 	 */
-	return tag_name[0] != '-' && git__strcmp(tag_name, "HEAD");
+	return tag_name[0] != '-';
 }
 
 static int git_tag_create__internal(
@@ -550,7 +548,7 @@ int git_tag_list_match(git_strarray *tag_names, const char *pattern, git_reposit
 	error = git_tag_foreach(repo, &tag_list_cb, (void *)&filter);
 
 	if (error < 0)
-		git_vector_dispose(&taglist);
+		git_vector_free(&taglist);
 
 	tag_names->strings =
 		(char **)git_vector_detach(&tag_names->count, NULL, &taglist);

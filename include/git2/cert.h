@@ -12,7 +12,7 @@
 
 /**
  * @file git2/cert.h
- * @brief TLS and SSH certificate handling
+ * @brief Git certificate objects
  * @defgroup git_cert Certificate objects
  * @ingroup Git
  * @{
@@ -169,5 +169,4 @@ typedef struct {
 
 /** @} */
 GIT_END_DECL
-
 #endif

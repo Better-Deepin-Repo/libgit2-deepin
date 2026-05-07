@@ -318,7 +318,7 @@ void test_attr_repo__inmemory_repo_without_index(void)
 
 	/* setup bare in-memory repo without index */
 #ifdef GIT_EXPERIMENTAL_SHA256
-	cl_git_pass(git_repository_new(&inmemory, NULL));
+	cl_git_pass(git_repository_new(&inmemory, GIT_OID_SHA1));
 #else
 	cl_git_pass(git_repository_new(&inmemory));
 #endif

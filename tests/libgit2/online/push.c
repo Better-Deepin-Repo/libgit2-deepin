@@ -165,7 +165,7 @@ static void do_verify_push_status(record_callbacks_data *data, const push_status
 		git__free(s);
 	}
 
-	git_vector_dispose(actual);
+	git_vector_free(actual);
 }
 
 /**
@@ -272,7 +272,7 @@ failed:
 	git_vector_foreach(&actual_refs, i, actual_ref)
 		git__free(actual_ref);
 
-	git_vector_dispose(&actual_refs);
+	git_vector_free(&actual_refs);
 	git_str_dispose(&msg);
 	git_buf_dispose(&ref_name);
 }
@@ -376,13 +376,13 @@ void test_online_push__initialize(void)
 	_remote_push_options = cl_getenv("GITTEST_PUSH_OPTIONS");
 	_remote = NULL;
 
-	_orig_ssh_cmd = cl_getenv("GIT_SSH_COMMAND");
+	_orig_ssh_cmd = cl_getenv("GIT_SSH");
 	_ssh_cmd = cl_getenv("GITTEST_SSH_CMD");
 
 	if (_ssh_cmd)
-		cl_setenv("GIT_SSH_COMMAND", _ssh_cmd);
+		cl_setenv("GIT_SSH", _ssh_cmd);
 	else
-		cl_setenv("GIT_SSH_COMMAND", NULL);
+		cl_setenv("GIT_SSH", NULL);
 
 	/* Skip the test if we're missing the remote URL */
 	if (!_remote_url)
@@ -416,7 +416,7 @@ void test_online_push__initialize(void)
 	}
 
 	git_remote_disconnect(_remote);
-	git_vector_dispose_deep(&delete_specs);
+	git_vector_free_deep(&delete_specs);
 
 	/* Now that we've deleted everything, fetch from the remote */
 	memcpy(&fetch_opts.callbacks, &_record_cbs, sizeof(git_remote_callbacks));
@@ -439,7 +439,6 @@ void test_online_push__cleanup(void)
 	git__free(_remote_expectcontinue);
 	git__free(_remote_push_options);
 
-	cl_setenv("GIT_SSH_COMMAND", _orig_ssh_cmd);
 	git__free(_orig_ssh_cmd);
 	git__free(_ssh_cmd);
 

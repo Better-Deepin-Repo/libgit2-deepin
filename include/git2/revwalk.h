@@ -13,8 +13,8 @@
 
 /**
  * @file git2/revwalk.h
- * @brief Traverse (walk) the commit graph (revision history)
- * @defgroup git_revwalk Traverse (walk) the commit graph (revision history)
+ * @brief Git revision traversal routines
+ * @defgroup git_revwalk Git revision traversal routines
  * @ingroup Git
  * @{
  */
@@ -299,5 +299,4 @@ GIT_EXTERN(int) git_revwalk_add_hide_cb(
 
 /** @} */
 GIT_END_DECL
-
 #endif

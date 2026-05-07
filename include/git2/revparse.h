@@ -12,8 +12,8 @@
 
 /**
  * @file git2/revparse.h
- * @brief Parse the textual revision information
- * @defgroup git_revparse Parse the textual revision information
+ * @brief Git revision parsing routines
+ * @defgroup git_revparse Git revision parsing routines
  * @ingroup Git
  * @{
  */
@@ -107,7 +107,7 @@ GIT_EXTERN(int) git_revparse(
 	git_repository *repo,
 	const char *spec);
 
+
 /** @} */
 GIT_END_DECL
-
 #endif

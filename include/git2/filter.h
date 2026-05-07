@@ -14,15 +14,9 @@
 
 /**
  * @file git2/filter.h
- * @brief Filters modify files during checkout or commit
- * @ingroup Git
+ * @brief Git filter APIs
  *
- * During checkout, filters update a file from a "canonical" state to
- * a format appropriate for the local filesystem; during commit, filters
- * produce the canonical state. For example, on Windows, the line ending
- * filters _may_ take a canonical state (with Unix-style newlines) in
- * the repository, and place the contents on-disk with Windows-style
- * `\r\n` line endings.
+ * @ingroup Git
  * @{
  */
 GIT_BEGIN_DECL
@@ -85,11 +79,8 @@ typedef struct {
 	git_oid attr_commit_id;
 } git_filter_options;
 
-/** Current version for the `git_filter_options` structure */
-#define GIT_FILTER_OPTIONS_VERSION 1
-
-/** Static constructor for `git_filter_options` */
-#define GIT_FILTER_OPTIONS_INIT {GIT_FILTER_OPTIONS_VERSION}
+ #define GIT_FILTER_OPTIONS_VERSION 1
+ #define GIT_FILTER_OPTIONS_INIT {GIT_FILTER_OPTIONS_VERSION}
 
 /**
  * A filter that can transform file data
@@ -277,7 +268,9 @@ GIT_EXTERN(int) git_filter_list_stream_blob(
  */
 GIT_EXTERN(void) git_filter_list_free(git_filter_list *filters);
 
-/** @} */
+
 GIT_END_DECL
+
+/** @} */
 
 #endif

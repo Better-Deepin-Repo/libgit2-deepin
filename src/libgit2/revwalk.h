@@ -10,19 +10,19 @@
 #include "common.h"
 
 #include "git2/revwalk.h"
+#include "oidmap.h"
 #include "commit_list.h"
 #include "pqueue.h"
 #include "pool.h"
 #include "vector.h"
-#include "hashmap_oid.h"
 
-GIT_HASHMAP_OID_STRUCT(git_revwalk_oidmap, git_commit_list_node *);
+#include "oidmap.h"
 
 struct git_revwalk {
 	git_repository *repo;
 	git_odb *odb;
 
-	git_revwalk_oidmap commits;
+	git_oidmap *commits;
 	git_pool commit_pool;
 
 	git_commit_list *iterator_topo;

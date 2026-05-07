@@ -13,8 +13,8 @@
 
 /**
  * @file git2/reflog.h
- * @brief Reference logs store how references change
- * @defgroup git_reflog Reference logs store how references change
+ * @brief Git reflog management routines
+ * @defgroup git_reflog Git reflog management routines
  * @ingroup Git
  * @{
  */
@@ -167,5 +167,4 @@ GIT_EXTERN(void) git_reflog_free(git_reflog *reflog);
 
 /** @} */
 GIT_END_DECL
-
 #endif

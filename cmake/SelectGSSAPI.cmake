@@ -2,7 +2,7 @@ include(SanitizeBool)
 
 # We try to find any packages our backends might use
 find_package(GSSAPI)
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin" OR CMAKE_SYSTEM_NAME MATCHES "iOS")
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	include(FindGSSFramework)
 endif()
 

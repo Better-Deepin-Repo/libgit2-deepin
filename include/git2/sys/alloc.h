@@ -10,17 +10,6 @@
 
 #include "git2/common.h"
 
-/**
- * @file git2/sys/alloc.h
- * @brief Custom memory allocators
- * @defgroup git_merge Git merge routines
- * @ingroup Git
- *
- * Users can configure custom allocators; this is particularly
- * interesting when running in constrained environments, when calling
- * from another language, or during testing.
- * @{
- */
 GIT_BEGIN_DECL
 
 /**
@@ -73,7 +62,6 @@ int git_stdalloc_init_allocator(git_allocator *allocator);
  */
 int git_win32_crtdbg_init_allocator(git_allocator *allocator);
 
-/** @} */
 GIT_END_DECL
 
 #endif

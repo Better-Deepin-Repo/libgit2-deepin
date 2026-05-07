@@ -13,14 +13,9 @@
 
 /**
  * @file git2/blame.h
- * @brief Specify a file's most recent changes per-line
+ * @brief Git blame routines
  * @defgroup git_blame Git blame routines
  * @ingroup Git
- *
- * Producing a "blame" (or "annotated history") decorates individual
- * lines in a file with the commit that introduced that particular line
- * of changes. This can be useful to indicate when and why a particular
- * change was made.
  * @{
  */
 GIT_BEGIN_DECL
@@ -92,7 +87,7 @@ typedef struct git_blame_options {
 	unsigned int version;
 
 	/** A combination of `git_blame_flag_t` */
-	unsigned int flags;
+	uint32_t flags;
 
 	/**
 	 * The lower bound on the number of alphanumeric characters that
@@ -127,10 +122,7 @@ typedef struct git_blame_options {
 	size_t max_line;
 } git_blame_options;
 
-/** Current version for the `git_blame_options` structure */
 #define GIT_BLAME_OPTIONS_VERSION 1
-
-/** Static constructor for `git_blame_options` */
 #define GIT_BLAME_OPTIONS_INIT {GIT_BLAME_OPTIONS_VERSION}
 
 /**
@@ -174,13 +166,6 @@ typedef struct git_blame_hunk {
 	git_signature *final_signature;
 
 	/**
-	 * The committer of `final_commit_id`. If `GIT_BLAME_USE_MAILMAP` has
-	 * been specified, it will contain the canonical real name and email
-	 * address.
-	 */
-	git_signature *final_committer;
-
-	/**
 	 * The OID of the commit where this hunk was found.
 	 * This will usually be the same as `final_commit_id`, except when
 	 * `GIT_BLAME_TRACK_COPIES_ANY_COMMIT_COPIES` has been specified.
@@ -206,93 +191,22 @@ typedef struct git_blame_hunk {
 	git_signature *orig_signature;
 
 	/**
-	 * The committer of `orig_commit_id`. If `GIT_BLAME_USE_MAILMAP` has
-	 * been specified, it will contain the canonical real name and email
-	 * address.
-	 */
-	git_signature *orig_committer;
-
-	/*
-	 * The summary of the commit.
-	 */
-	const char *summary;
-
-	/**
 	 * The 1 iff the hunk has been tracked to a boundary commit (the root,
 	 * or the commit specified in git_blame_options.oldest_commit)
 	 */
 	char boundary;
 } git_blame_hunk;
 
-/**
- * Structure that represents a line in a blamed file.
- */
-typedef struct git_blame_line {
-	const char *ptr;
-	size_t len;
-} git_blame_line;
 
 /** Opaque structure to hold blame results */
 typedef struct git_blame git_blame;
 
 /**
- * Gets the number of lines that exist in the blame structure.
- *
- * @param blame The blame structure to query.
- * @return The number of line.
- */
-GIT_EXTERN(size_t) git_blame_linecount(git_blame *blame);
-
-/**
  * Gets the number of hunks that exist in the blame structure.
  *
  * @param blame The blame structure to query.
  * @return The number of hunks.
  */
-GIT_EXTERN(size_t) git_blame_hunkcount(git_blame *blame);
-
-/**
- * Gets the blame hunk at the given index.
- *
- * @param blame the blame structure to query
- * @param index index of the hunk to retrieve
- * @return the hunk at the given index, or NULL on error
- */
-GIT_EXTERN(const git_blame_hunk *) git_blame_hunk_byindex(
-	git_blame *blame,
-	size_t index);
-
-/**
- * Gets the hunk that relates to the given line number in the newest
- * commit.
- *
- * @param blame the blame structure to query
- * @param lineno the (1-based) line number to find a hunk for
- * @return the hunk that contains the given line, or NULL on error
- */
-GIT_EXTERN(const git_blame_hunk *) git_blame_hunk_byline(
-	git_blame *blame,
-	size_t lineno);
-
-/**
- * Gets the information about the line in the blame.
- *
- * @param blame the blame structure to query
- * @param idx the (1-based) line number
- * @return the blamed line, or NULL on error
- */
-GIT_EXTERN(const git_blame_line *) git_blame_line_byindex(
-	git_blame *blame,
-	size_t idx);
-
-#ifndef GIT_DEPRECATE_HARD
-/**
- * Gets the number of hunks that exist in the blame structure.
- *
- * @param blame The blame structure to query.
- * @return The number of hunks.
- */
-
 GIT_EXTERN(uint32_t) git_blame_get_hunk_count(git_blame *blame);
 
 /**
@@ -302,9 +216,9 @@ GIT_EXTERN(uint32_t) git_blame_get_hunk_count(git_blame *blame);
  * @param index index of the hunk to retrieve
  * @return the hunk at the given index, or NULL on error
  */
-GIT_EXTERN(const git_blame_hunk *) git_blame_get_hunk_byindex(
-	git_blame *blame,
-	uint32_t index);
+GIT_EXTERN(const git_blame_hunk*) git_blame_get_hunk_byindex(
+		git_blame *blame,
+		uint32_t index);
 
 /**
  * Gets the hunk that relates to the given line number in the newest commit.
@@ -313,58 +227,39 @@ GIT_EXTERN(const git_blame_hunk *) git_blame_get_hunk_byindex(
  * @param lineno the (1-based) line number to find a hunk for
  * @return the hunk that contains the given line, or NULL on error
  */
-GIT_EXTERN(const git_blame_hunk *) git_blame_get_hunk_byline(
-	git_blame *blame,
-	size_t lineno);
-#endif
+GIT_EXTERN(const git_blame_hunk*) git_blame_get_hunk_byline(
+		git_blame *blame,
+		size_t lineno);
 
 /**
- * Get the blame for a single file in the repository.
+ * Get the blame for a single file.
  *
  * @param out pointer that will receive the blame object
  * @param repo repository whose history is to be walked
  * @param path path to file to consider
- * @param options options for the blame operation or NULL
- * @return 0 on success, or an error code
+ * @param options options for the blame operation.  If NULL, this is treated as
+ *                though GIT_BLAME_OPTIONS_INIT were passed.
+ * @return 0 on success, or an error code. (use git_error_last for information
+ *         about the error.)
  */
 GIT_EXTERN(int) git_blame_file(
-	git_blame **out,
-	git_repository *repo,
-	const char *path,
-	git_blame_options *options);
+		git_blame **out,
+		git_repository *repo,
+		const char *path,
+		git_blame_options *options);
+
 
 /**
- * Get the blame for a single file in the repository, using the specified
- * buffer contents as the uncommitted changes of the file (the working
- * directory contents).
+ * Get blame data for a file that has been modified in memory. The `reference`
+ * parameter is a pre-calculated blame for the in-odb history of the file. This
+ * means that once a file blame is completed (which can be expensive), updating
+ * the buffer blame is very fast.
  *
- * @param out pointer that will receive the blame object
- * @param repo repository whose history is to be walked
- * @param path path to file to consider
- * @param contents the uncommitted changes
- * @param contents_len the length of the changes buffer
- * @param options options for the blame operation or NULL
- * @return 0 on success, or an error code
- */
-GIT_EXTERN(int) git_blame_file_from_buffer(
-	git_blame **out,
-	git_repository *repo,
-	const char *path,
-	const char *contents,
-	size_t contents_len,
-	git_blame_options *options);
-
-/**
- * Get blame data for a file that has been modified in memory. The `blame`
- * parameter is a pre-calculated blame for the in-odb history of the file.
- * This means that once a file blame is completed (which can be expensive),
- * updating the buffer blame is very fast.
- *
- * Lines that differ between the buffer and the committed version are
- * marked as having a zero OID for their final_commit_id.
+ * Lines that differ between the buffer and the committed version are marked as
+ * having a zero OID for their final_commit_id.
  *
  * @param out pointer that will receive the resulting blame data
- * @param base cached blame from the history of the file (usually the output
+ * @param reference cached blame from the history of the file (usually the output
  *                  from git_blame_file)
  * @param buffer the (possibly) modified contents of the file
  * @param buffer_len number of valid bytes in the buffer
@@ -372,10 +267,10 @@ GIT_EXTERN(int) git_blame_file_from_buffer(
  *         about the error)
  */
 GIT_EXTERN(int) git_blame_buffer(
-	git_blame **out,
-	git_blame *base,
-	const char *buffer,
-	size_t buffer_len);
+		git_blame **out,
+		git_blame *reference,
+		const char *buffer,
+		size_t buffer_len);
 
 /**
  * Free memory allocated by git_blame_file or git_blame_buffer.

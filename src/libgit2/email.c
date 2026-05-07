@@ -16,7 +16,6 @@
 
 #include "git2/email.h"
 #include "git2/patch.h"
-#include "git2/sys/email.h"
 #include "git2/version.h"
 
 /*

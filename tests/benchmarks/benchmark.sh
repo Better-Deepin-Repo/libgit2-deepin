@@ -100,11 +100,11 @@ SYSTEM_KERNEL=$(uname -v)
 
 fullpath() {
 	if [[ "$(uname -s)" == "MINGW"* && $(cygpath -u "${TEST_CLI}") == "/"* ]]; then
-		echo "$1"
+		echo "${TEST_CLI}"
 	elif [[ "${TEST_CLI}" == "/"* ]]; then
-		echo "$1"
+		echo "${TEST_CLI}"
 	else
-		which "$1"
+		which "${TEST_CLI}"
 	fi
 }
 
@@ -213,19 +213,9 @@ for TEST_PATH in "${BENCHMARK_DIR}"/*; do
 	ERROR_FILE="${OUTPUT_DIR}/${TEST_FILE}.err"
 
 	FAILED=
-	{
-	  ${TEST_PATH} --cli "${TEST_CLI}" --baseline-cli "${BASELINE_CLI}" --json "${JSON_FILE}" ${SHOW_OUTPUT} >"${OUTPUT_FILE}" 2>"${ERROR_FILE}";
-	  FAILED=$?
-	} || true
+	${TEST_PATH} --cli "${TEST_CLI}" --baseline-cli "${BASELINE_CLI}" --json "${JSON_FILE}" ${SHOW_OUTPUT} >"${OUTPUT_FILE}" 2>"${ERROR_FILE}" || FAILED=1
 
-	if [ "${FAILED}" = "2" ]; then
-		if [ "${VERBOSE}" != "1" ]; then
-			echo "skipped!"
-		fi
-
-		indent < "${ERROR_FILE}"
-		continue
-	elif [ "${FAILED}" != "0" ]; then
+	if [ "${FAILED}" = "1" ]; then
 		if [ "${VERBOSE}" != "1" ]; then
 			echo "failed!"
 		fi
