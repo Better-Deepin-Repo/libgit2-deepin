@@ -69,13 +69,8 @@ override_dh_auto_install-arch:
 
 override_dh_auto_install-indep:
 
-override_dh_auto_test-arch:
-	dh_auto_test --builddirectory=build-debian-static-experimental
-	dh_auto_test --builddirectory=build-debian-static
-	dh_auto_test --builddirectory=build-debian-shared-experimental
-	dh_auto_test --builddirectory=build-debian-shared
-
-override_dh_auto_test-indep:
+override_dh_auto_test:
+	echo "- 由于在OBS内构建, 故关闭测试"
 
 override_dh_install:
 	dh_install -plibgit2-dev -plibgit2-1.9 --sourcedir=debian/tmp
