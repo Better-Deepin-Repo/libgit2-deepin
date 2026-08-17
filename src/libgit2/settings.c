@@ -44,6 +44,7 @@ extern size_t git_mwindow__window_size;
 extern size_t git_mwindow__mapped_limit;
 extern size_t git_mwindow__file_limit;
 extern size_t git_indexer__max_objects;
+extern size_t git_indexer__max_object_size;
 extern bool git_disable_pack_keep_file_checks;
 extern int git_odb__packed_priority;
 extern int git_odb__loose_priority;
@@ -222,6 +223,18 @@ int git_libgit2_opts(int key, ...)
 #endif
 		break;
 
+	case GIT_OPT_ADD_SSL_X509_CERT:
+#ifdef GIT_OPENSSL
+		{
+			X509 *cert = va_arg(ap, X509 *);
+			error = git_openssl__add_x509_cert(cert);
+		}
+#else
+		git_error_set(GIT_ERROR_SSL, "TLS backend doesn't support adding of the raw certs");
+		error = -1;
+#endif
+		break;
+
 	case GIT_OPT_SET_USER_AGENT:
 		{
 			const char *new_agent = va_arg(ap, const char *);
@@ -344,6 +357,14 @@ int git_libgit2_opts(int key, ...)
 
 	case GIT_OPT_GET_PACK_MAX_OBJECTS:
 		*(va_arg(ap, size_t *)) = git_indexer__max_objects;
+		break;
+
+	case GIT_OPT_SET_PACK_MAX_OBJECT_SIZE:
+		git_indexer__max_object_size = va_arg(ap, size_t);
+		break;
+
+	case GIT_OPT_GET_PACK_MAX_OBJECT_SIZE:
+		*(va_arg(ap, size_t *)) = git_indexer__max_object_size;
 		break;
 
 	case GIT_OPT_DISABLE_PACK_KEEP_FILE_CHECKS:

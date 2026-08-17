@@ -7,14 +7,14 @@
 #ifndef INCLUDE_util_h__
 #define INCLUDE_util_h__
 
-#ifndef GIT_WIN32
-# include <ctype.h>
-#endif
-
 #include "str.h"
 #include "git2_util.h"
 #include "strnlen.h"
 #include "thread.h"
+
+#ifndef GIT_WIN32
+# include <ctype.h>
+#endif
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 #define bitsizeof(x) (CHAR_BIT * sizeof(x))
@@ -57,6 +57,7 @@ extern int git__prefixcmp_icase(const char *str, const char *prefix);
 extern int git__prefixncmp(const char *str, size_t str_n, const char *prefix);
 extern int git__prefixncmp_icase(const char *str, size_t str_n, const char *prefix);
 extern int git__suffixcmp(const char *str, const char *suffix);
+extern int git__suffixcmp_icase(const char *str, const char *suffix);
 
 GIT_INLINE(int) git__signum(int val)
 {
